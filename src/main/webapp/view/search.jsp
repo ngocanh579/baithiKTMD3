@@ -18,7 +18,7 @@
     <div class="col-md-8">
         <div class="card shadow">
             <div class="card-header bg-primary text-white text-center">
-                <h3>🔍 Tìm kiếm mặt bằng</h3>
+                <h3> Tìm kiếm mặt bằng</h3>
             </div>
             <div class="card-body">
                 <form action="${ctx}/mat-bang" method="get" class="row g-3">
