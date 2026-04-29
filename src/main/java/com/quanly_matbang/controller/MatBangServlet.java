@@ -90,14 +90,12 @@ public class MatBangServlet extends HttpServlet {
     private void add(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
 
-        // Khai báo biến ngoài try-catch
         String maMatBang = null, trangThai = null, dienTichStr = null, tangStr = null;
         String loaiMatBang = null, giaTienStr = null, ngayBatDauStr = null, ngayKetThucStr = null;
 
         MatBang matbang = new MatBang();
 
         try {
-            // Lấy parameters
             maMatBang = request.getParameter("maMatBang");
             trangThai = request.getParameter("trangThai");
             dienTichStr = request.getParameter("dienTich");
@@ -107,7 +105,6 @@ public class MatBangServlet extends HttpServlet {
             ngayBatDauStr = request.getParameter("ngayBatDau");
             ngayKetThucStr = request.getParameter("ngayKetThuc");
 
-            // Validate cơ bản
             if (maMatBang == null || maMatBang.trim().isEmpty()) {
                 throw new Exception("Mã mặt bằng không được để trống");
             }
@@ -118,7 +115,6 @@ public class MatBangServlet extends HttpServlet {
                 throw new Exception("Ngày kết thúc không được để trống");
             }
 
-            // Parse và set dữ liệu
             matbang.setMaMatBang(maMatBang.trim());
             matbang.setTrangThai(trangThai);
             matbang.setDienTich(Double.parseDouble(dienTichStr));
@@ -131,14 +127,11 @@ public class MatBangServlet extends HttpServlet {
             matbang.setNgayBatDau(Date.valueOf(start));
             matbang.setNgayKetThuc(Date.valueOf(end));
 
-            // Gọi service (có validation 6 tháng)
             service.add(matbang);
 
-            // Thành công → Redirect
             response.sendRedirect(request.getContextPath() + "/mat-bang?action=list");
 
         } catch (Exception e) {
-            // Lỗi → Giữ dữ liệu và forward về form
             request.setAttribute("error", e.getMessage());
 
             request.setAttribute("maMatBang", maMatBang);
@@ -176,20 +169,20 @@ public class MatBangServlet extends HttpServlet {
         if (giaStr != null && !giaStr.trim().isEmpty()) {
             gia = Double.parseDouble(giaStr);
         }
+
         Integer tang = null;
         if (tangStr != null && !tangStr.trim().isEmpty()) {
             tang = Integer.parseInt(tangStr);
         }
+
         if (loai != null && loai.trim().isEmpty()) loai = null;
 
-        // Set cho list.jsp hiển thị lại form
         request.setAttribute("searchLoai", loai);
         request.setAttribute("searchGia", giaStr);
         request.setAttribute("searchTang", tangStr);
 
         List<MatBang> list = service.search(loai, gia, tang);
         request.setAttribute("list", list != null ? list : new ArrayList<>());
-
 
         request.getRequestDispatcher("/view/list.jsp").forward(request, response);
     }
