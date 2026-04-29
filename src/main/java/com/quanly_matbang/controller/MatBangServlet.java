@@ -190,7 +190,7 @@ public class MatBangServlet extends HttpServlet {
         List<MatBang> list = service.search(loai, gia, tang);
         request.setAttribute("list", list != null ? list : new ArrayList<>());
 
-        // ✅ FORWARD VỀ list.jsp
+
         request.getRequestDispatcher("/view/list.jsp").forward(request, response);
     }
 
