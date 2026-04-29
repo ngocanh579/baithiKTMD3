@@ -8,6 +8,7 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.*;
@@ -67,22 +68,18 @@ public class MatBangServlet extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         String action = request.getParameter("action");
-        System.out.println("POST action = " + action);
 
         try {
-
             if (action == null) action = "";
 
             switch (action) {
                 case "add":
                     add(request, response);
                     break;
-
                 default:
                     response.sendRedirect(request.getContextPath() + "/mat-bang?action=list");
                     break;
             }
-
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", e.getMessage());
@@ -93,26 +90,68 @@ public class MatBangServlet extends HttpServlet {
     private void add(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
 
+        // Khai báo biến ngoài try-catch
+        String maMatBang = null, trangThai = null, dienTichStr = null, tangStr = null;
+        String loaiMatBang = null, giaTienStr = null, ngayBatDauStr = null, ngayKetThucStr = null;
+
         MatBang matbang = new MatBang();
 
-        matbang.setMaMatBang(request.getParameter("maMatBang"));
-        matbang.setTrangThai(request.getParameter("trangThai"));
-        matbang.setDienTich(Double.parseDouble(request.getParameter("dienTich")));
-        matbang.setTang(Integer.parseInt(request.getParameter("tang")));
-        matbang.setLoaiMatBang(request.getParameter("loaiMatBang"));
-        matbang.setGiaTien(Double.parseDouble(request.getParameter("giaTien")));
+        try {
+            // Lấy parameters
+            maMatBang = request.getParameter("maMatBang");
+            trangThai = request.getParameter("trangThai");
+            dienTichStr = request.getParameter("dienTich");
+            tangStr = request.getParameter("tang");
+            loaiMatBang = request.getParameter("loaiMatBang");
+            giaTienStr = request.getParameter("giaTien");
+            ngayBatDauStr = request.getParameter("ngayBatDau");
+            ngayKetThucStr = request.getParameter("ngayKetThuc");
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            // Validate cơ bản
+            if (maMatBang == null || maMatBang.trim().isEmpty()) {
+                throw new Exception("Mã mặt bằng không được để trống");
+            }
+            if (ngayBatDauStr == null || ngayBatDauStr.trim().isEmpty()) {
+                throw new Exception("Ngày bắt đầu không được để trống");
+            }
+            if (ngayKetThucStr == null || ngayKetThucStr.trim().isEmpty()) {
+                throw new Exception("Ngày kết thúc không được để trống");
+            }
 
-        LocalDate start = LocalDate.parse(request.getParameter("ngayBatDau"), formatter);
-        LocalDate end = LocalDate.parse(request.getParameter("ngayKetThuc"), formatter);
+            // Parse và set dữ liệu
+            matbang.setMaMatBang(maMatBang.trim());
+            matbang.setTrangThai(trangThai);
+            matbang.setDienTich(Double.parseDouble(dienTichStr));
+            matbang.setTang(Integer.parseInt(tangStr));
+            matbang.setLoaiMatBang(loaiMatBang);
+            matbang.setGiaTien(Double.parseDouble(giaTienStr));
 
-        matbang.setNgayBatDau(Date.valueOf(start));
-        matbang.setNgayKetThuc(Date.valueOf(end));
+            LocalDate start = LocalDate.parse(ngayBatDauStr.trim());
+            LocalDate end = LocalDate.parse(ngayKetThucStr.trim());
+            matbang.setNgayBatDau(Date.valueOf(start));
+            matbang.setNgayKetThuc(Date.valueOf(end));
 
-        service.add(matbang);
+            // Gọi service (có validation 6 tháng)
+            service.add(matbang);
 
-        response.sendRedirect(request.getContextPath() + "/mat-bang?action=list");
+            // Thành công → Redirect
+            response.sendRedirect(request.getContextPath() + "/mat-bang?action=list");
+
+        } catch (Exception e) {
+            // Lỗi → Giữ dữ liệu và forward về form
+            request.setAttribute("error", e.getMessage());
+
+            request.setAttribute("maMatBang", maMatBang);
+            request.setAttribute("trangThai", trangThai);
+            request.setAttribute("dienTich", dienTichStr);
+            request.setAttribute("tang", tangStr);
+            request.setAttribute("loaiMatBang", loaiMatBang);
+            request.setAttribute("giaTien", giaTienStr);
+            request.setAttribute("ngayBatDau", ngayBatDauStr);
+            request.setAttribute("ngayKetThuc", ngayKetThucStr);
+
+            request.getRequestDispatcher("/view/create.jsp").forward(request, response);
+        }
     }
 
     private void list(HttpServletRequest request, HttpServletResponse response)
@@ -130,25 +169,28 @@ public class MatBangServlet extends HttpServlet {
             throws Exception {
 
         String loai = request.getParameter("loai");
-        if (loai != null && loai.isEmpty()) loai = null;
+        String giaStr = request.getParameter("gia");
+        String tangStr = request.getParameter("tang");
 
         Double gia = null;
-        String giaStr = request.getParameter("gia");
-        if (giaStr != null && !giaStr.isEmpty()) {
+        if (giaStr != null && !giaStr.trim().isEmpty()) {
             gia = Double.parseDouble(giaStr);
         }
-
         Integer tang = null;
-        String tangStr = request.getParameter("tang");
-        if (tangStr != null && !tangStr.isEmpty()) {
+        if (tangStr != null && !tangStr.trim().isEmpty()) {
             tang = Integer.parseInt(tangStr);
         }
+        if (loai != null && loai.trim().isEmpty()) loai = null;
+
+        // Set cho list.jsp hiển thị lại form
+        request.setAttribute("searchLoai", loai);
+        request.setAttribute("searchGia", giaStr);
+        request.setAttribute("searchTang", tangStr);
 
         List<MatBang> list = service.search(loai, gia, tang);
+        request.setAttribute("list", list != null ? list : new ArrayList<>());
 
-        if (list == null) list = new ArrayList<>();
-
-        request.setAttribute("list", list);
+        // ✅ FORWARD VỀ list.jsp
         request.getRequestDispatcher("/view/list.jsp").forward(request, response);
     }
 

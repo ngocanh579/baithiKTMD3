@@ -5,92 +5,86 @@
   Time: 7:35 PM
   To change this template use File | Settings | File Templates.
 --%>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Thêm mặt bằng</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
 </head>
-
-<body class="container">
-
+<body class="container mt-4">
 <h2>THÊM MẶT BẰNG</h2>
 
 <c:if test="${not empty error}">
-    <div style="color:red">${error}</div>
+    <div class="alert alert-danger">
+        <strong>Lỗi:</strong> ${error}
+    </div>
 </c:if>
 
-<form action="${pageContext.request.contextPath}/mat-bang" method="post">
+<form action="${pageContext.request.contextPath}/mat-bang" method="post" accept-charset="UTF-8">
     <input type="hidden" name="action" value="add">
 
-    <div>
-        <label>Mã mặt bằng</label>
-        <input type="text"
-               name="maMatBang"
-               required
-               pattern="^[A-Z0-9]{2,3}-[A-Z0-9]{2}-[A-Z0-9]{2}$"
-               title="XXX-XX-XX (A-Z, 0-9)">
+    <div class="mb-3">
+        <label class="form-label">Mã mặt bằng</label>
+        <input type="text" class="form-control" name="maMatBang"
+               value="${maMatBang}" required
+               pattern="^[A-Z0-9]{2,3}-[A-Z0-9]{2}-[A-Z0-9]{2}$">
     </div>
 
-    <div>
-        <label>Trạng thái</label>
-        <select name="trangThai" required>
-            <option value="Trống">Trống</option>
-            <option value="Hạ tầng">Hạ tầng</option>
-            <option value="Đầy đủ">Đầy đủ</option>
+    <div class="mb-3">
+        <label class="form-label">Trạng thái</label>
+        <select class="form-select" name="trangThai" required>
+            <option value="">Chọn trạng thái</option>
+            <option value="Trống" ${trangThai == 'Trống' ? 'selected' : ''}>Trống</option>
+            <option value="Hạ tầng" ${trangThai == 'Hạ tầng' ? 'selected' : ''}>Hạ tầng</option>
+            <option value="Đầy đủ" ${trangThai == 'Đầy đủ' ? 'selected' : ''}>Đầy đủ</option>
         </select>
     </div>
 
-    <div>
-        <label>Diện tích</label>
-        <input type="number" name="dienTich" min="21" required>
+    <div class="mb-3">
+        <label class="form-label">Diện tích</label>
+        <input type="number" class="form-control" name="dienTich"
+               value="${dienTich}" min="21" step="0.01" required>
     </div>
 
-    <div>
-        <label>Tầng</label>
-        <input type="number" name="tang" min="1" max="15" required>
+    <div class="mb-3">
+        <label class="form-label">Tầng</label>
+        <input type="number" class="form-control" name="tang"
+               value="${tang}" min="1" max="15" required>
     </div>
 
-    <div>
-        <label>Loại mặt bằng</label>
-        <select name="loaiMatBang" required>
-            <option value="Văn phòng chia sẻ">Văn phòng chia sẻ</option>
-            <option value="Văn phòng trọn gói">Văn phòng trọn gói</option>
+    <div class="mb-3">
+        <label class="form-label">Loại mặt bằng</label>
+        <select class="form-select" name="loaiMatBang" required>
+            <option value="">Chọn loại</option>
+            <option value="Văn phòng chia sẻ" ${loaiMatBang == 'Văn phòng chia sẻ' ? 'selected' : ''}>Văn phòng chia sẻ</option>
+            <option value="Văn phòng trọn gói" ${loaiMatBang == 'Văn phòng trọn gói' ? 'selected' : ''}>Văn phòng trọn gói</option>
         </select>
     </div>
 
-    <div>
-        <label>Giá tiền</label>
-        <input type="number" name="giaTien" min="1000001" required>
+    <div class="mb-3">
+        <label class="form-label">Giá tiền</label>
+        <input type="number" class="form-control" name="giaTien"
+               value="${giaTien}" min="1000001" step="1000" required>
     </div>
 
-    <div>
-        <label>Ngày bắt đầu</label>
-        <input type="text"
-               name="ngayBatDau"
-               placeholder="dd/mm/yyyy"
-               pattern="^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/[0-9]{4}$"
-               required>
+    <div class="mb-3">
+        <label class="form-label">Ngày bắt đầu</label>
+        <input type="date" class="form-control" name="ngayBatDau"
+               value="${ngayBatDau}" required>
     </div>
 
-    <div>
-        <label>Ngày kết thúc</label>
-        <input type="text"
-               name="ngayKetThuc"
-               placeholder="dd/mm/yyyy"
-               pattern="^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/[0-9]{4}$"
-               required>
+    <div class="mb-3">
+        <label class="form-label">Ngày kết thúc</label>
+        <input type="date" class="form-control" name="ngayKetThuc"
+               value="${ngayKetThuc}" required>
     </div>
 
-    <br>
-
-    <button type="submit">Lưu</button>
-    <a href="${ctx}/mat-bang?action=list">Quay lại</a>
-
+    <div class="mt-3">
+        <button type="submit" class="btn btn-primary">Lưu</button>
+        <a href="${pageContext.request.contextPath}/mat-bang?action=list" class="btn btn-secondary">Quay lại</a>
+    </div>
 </form>
-
 </body>
 </html>
